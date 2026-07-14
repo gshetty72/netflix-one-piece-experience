@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ONE PIECE | Netflix Fandom Experience</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #E50914;
+      --red-hover: #F40612;
+      --canvas: #141414;
+      --surface-1: #1F1F1F;
+      --surface-2: #2D2D2D;
+      --border: #333333;
+      --ink: #FFFFFF;
+      --ink-muted: #A3A3A3;
+      --green: #46D369;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--canvas);
+      color: var(--ink);
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: var(--surface-1); }
+    ::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+    .no-scroll::-webkit-scrollbar { display: none; }
+    .no-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Nav */
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 60;
+      height: 68px;
+      display: flex; align-items: center; gap: 28px;
+      padding: 0 4%;
+      transition: background 0.35s ease;
+    }
+    #nav.scrolled { background: var(--canvas); }
+    #nav.at-top { background: linear-gradient(to bottom, rgba(20,20,20,0.9), transparent); }
+    .nav-logo {
+      color: var(--red);
+      font-size: 30px; font-weight: 900;
+      letter-spacing: -0.04em; font-style: italic;
+      flex-shrink: 0;
+    }
+    .nav-links { display: flex; gap: 18px; align-items: center; flex: 1; }
+    .nav-links a {
+      color: #ccc; text-decoration: none; font-size: 14px;
+      transition: color 0.15s; white-space: nowrap;
+    }
+    .nav-links a:hover, .nav-links a.active { color: white; font-weight: 600; }
+    .nav-right { display: flex; gap: 14px; align-items: center; }
+    .nav-avatar {
+      width: 32px; height: 32px; border-radius: 4px;
+      background: #1565C0; color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+    .nav-icon { cursor: pointer; opacity: 0.85; }
+    .nav-icon:hover { opacity: 1; }
+
+    /* Buttons */
+    .btn-play {
+      background: white; color: black; border: none;
+      padding: 10px 24px; border-radius: 4px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: background 0.15s; white-space: nowrap;
+    }
+    .btn-play:hover { background: rgba(255,255,255,0.85); }
+    .btn-info {
+      background: rgba(109,109,110,0.7); color: white; border: none;
+      padding: 10px 24px; border-radius: 4px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: background 0.15s; white-space: nowrap;
+    }
+    .btn-info:hover { background: rgba(109,109,110,0.9); }
+
+    /* Hero */
+    #home {
+      position: relative;
+      min-height: 100dvh;
+      display: flex; align-items: flex-end;
+      padding-bottom: 10%;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background:
+        url('hero-banner.jpg') center center / cover no-repeat;
+      overflow: hidden;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(to right, rgba(10,10,10,0.62) 0%, rgba(10,10,10,0.32) 28%, rgba(10,10,10,0.06) 52%, transparent 68%),
+        linear-gradient(to top, #141414 0%, rgba(20,20,20,0.9) 10%, rgba(20,20,20,0.4) 20%, rgba(20,20,20,0.08) 34%, transparent 48%);
+    }
+    /* Thin hard-seal at the section boundary to prevent any edge line */
+    .hero-floor {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 72px;
+      background: linear-gradient(to top, #141414 45%, transparent 100%);
+      pointer-events: none;
+    }
+    .hero-content {
+      position: relative; z-index: 1;
+      padding: 0 4%; max-width: 580px;
+    }
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+      color: var(--red); text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .hero-title {
+      font-size: clamp(64px, 11vw, 108px);
+      font-weight: 900; letter-spacing: -0.025em; line-height: 0.9;
+      color: white; text-shadow: 2px 4px 20px rgba(0,0,0,0.7);
+      margin-bottom: 20px;
+    }
+    .hero-desc {
+      font-size: 16px; line-height: 1.65;
+      color: rgba(255,255,255,0.85);
+      max-width: 420px; margin-bottom: 28px;
+      text-shadow: 0 1px 6px rgba(0,0,0,0.7);
+    }
+    .hero-ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    /* Section header */
+    .section-title {
+      font-size: 20px; font-weight: 600; color: white;
+      margin-bottom: 16px; padding: 0 4%;
+    }
+
+    /* Watchlist row */
+    #watchlist { padding: 8px 0 40px; }
+    .watchlist-wrap { position: relative; }
+    .watchlist-row {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding: 8px 4% 16px;
+      align-items: flex-start;
+    }
+    .arrow-btn {
+      position: absolute; top: 0; bottom: 0; z-index: 5;
+      background: none; border: none; color: white;
+      font-size: 28px; padding: 0 14px; cursor: pointer;
+      display: flex; align-items: center;
+      opacity: 0.8; transition: opacity 0.15s;
+    }
+    .arrow-btn:hover { opacity: 1; }
+    .arrow-left {
+      left: 0;
+      background: linear-gradient(to right, rgba(20,20,20,0.95), transparent);
+    }
+    .arrow-right {
+      right: 0;
+      background: linear-gradient(to left, rgba(20,20,20,0.95), transparent);
+    }
+    .content-card {
+      flex-shrink: 0; cursor: pointer; border-radius: 4px; overflow: hidden;
+      transition: transform 0.22s ease, box-shadow 0.22s ease; position: relative;
+    }
+    .content-card:hover { transform: scale(1.08); box-shadow: 0 8px 32px rgba(0,0,0,0.8); z-index: 5; }
+    /* Landscape 16:9 watchlist card */
+    .card-img-wrap {
+      width: 240px; height: 135px;
+      background: var(--surface-2); position: relative; overflow: hidden;
+    }
+    .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    /* Netflix N logo — top-left corner of card */
+    .card-nlogo {
+      position: absolute; top: 6px; left: 6px;
+      height: 20px; width: auto; display: block;
+    }
+    /* Status badge — bottom-left, red strip */
+    .card-status {
+      position: absolute; bottom: 0; left: 0;
+      background: var(--red); color: white;
+      font-size: 10px; font-weight: 700;
+      padding: 3px 8px;
+      letter-spacing: 0.04em;
+    }
+    .card-placeholder {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 12px; text-align: center;
+    }
+    .card-placeholder-icon { font-size: 28px; margin-bottom: 6px; }
+    .card-placeholder-title { font-size: 11px; color: white; font-weight: 600; line-height: 1.3; }
+
+    /* Wanted Poster */
+    #characters { padding: 40px 0 20px; }
+    .crew-row {
+      display: flex; gap: 28px; overflow-x: auto;
+      padding: 16px 4% 36px; align-items: flex-start;
+    }
+    .crew-item { flex-shrink: 0; text-align: center; }
+    .crew-actor { margin-top: 14px; font-size: 12px; color: var(--ink-muted); }
+
+    .wanted-poster {
+      width: 180px;
+      height: 252px;
+      overflow: hidden;
+      background: #141414;
+      cursor: pointer;
+      transform: rotate(var(--rot, 0deg));
+      transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.85);
+    }
+    .wanted-poster:hover {
+      transform: translateY(-10px) rotate(var(--rot, 0deg));
+      box-shadow: 0 20px 48px rgba(0,0,0,0.92);
+    }
+    .wanted-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    .poster-placeholder {
+      width: 100%; height: 100%; background: var(--surface-2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 48px;
+    }
+
+
+    /* Podcast */
+    #podcast { padding: 40px 0; }
+    /* Podcast */
+    .podcast-layout {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin: 0 4%; gap: 24px;
+    }
+    .podcast-left {
+      display: flex; flex-direction: column; gap: 32px;
+      background: #141414; flex-shrink: 0; width: 38%;
+    }
+    .podcast-img-block {
+      position: relative; width: 100%; height: 281px; overflow: hidden;
+    }
+    .podcast-img-block img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .podcast-img-gradient {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(20,20,20,0) 80%, #141414 100%);
+      pointer-events: none;
+    }
+    .podcast-title-preview { display: flex; flex-direction: column; gap: 40px; }
+    .podcast-logo-group { display: flex; flex-direction: column; gap: 8px; }
+    .podcast-logo { width: 100%; max-width: 348px; height: auto; display: block; }
+    .podcast-official-text {
+      font-size: 20px; color: white; font-weight: 400;
+      letter-spacing: 0.02em; margin: 0;
+    }
+    .podcast-btns { display: flex; gap: 11px; }
+
+    .episode-list { display: flex; flex-direction: column; flex: 1; }
+    .episode-row {
+      display: flex; align-items: center;
+      padding: 16px 52px 16px 16px;
+      border-bottom: 1px solid #404040;
+      border-radius: 4px; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .episode-row:first-child { border-top: 1px solid #404040; }
+    .episode-row:hover { background: rgba(255,255,255,0.08); }
+    .episode-row.playing { background: rgba(229,9,20,0.12); }
+    .episode-num {
+      width: 51px; text-align: center; font-size: 24px;
+      color: #dcdcdc; flex-shrink: 0; font-weight: 500;
+    }
+    .episode-info {
+      flex: 1; display: flex; align-items: center;
+      justify-content: space-between; padding: 8px 16px;
+    }
+    .episode-title { font-size: 16px; color: white; }
+    .episode-title.active { font-weight: 600; }
+    .episode-dur { font-size: 16px; color: white; text-align: right; flex-shrink: 0; }
+
+    /* Games */
+    #games { padding: 40px 0 80px; }
+    .games-grid { margin: 0 4%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .game-tile {
+      position: relative; height: 200px; border-radius: 6px;
+      overflow: hidden; cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .game-tile:hover { transform: scale(1.03); box-shadow: 0 12px 40px rgba(0,0,0,0.8); }
+    .game-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .game-tile-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(10,10,10,0.75) 0%, rgba(10,10,10,0.3) 100%);
+    }
+    .game-tile-title {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .game-tile-title h3 {
+      color: white; font-size: 20px; font-weight: 700;
+      text-align: center; text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+      line-height: 1.3; max-width: 200px;
+    }
+    .game-placeholder {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .game-placeholder-inner {
+      width: 100%; height: 100%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Modal overlay */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.78);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; overflow-y: auto;
+      animation: fadeOverlay 0.2s ease;
+    }
+    @keyframes fadeOverlay { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+    .proto-toast {
+      position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+      background: #2a2a2a; color: var(--ink-muted); font-size: 13px;
+      padding: 10px 20px; border-radius: 6px; white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6); z-index: 9999;
+      animation: fadeOverlay 0.2s ease;
+      border: 1px solid #3a3a3a;
+    }
+    .modal-card { animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1); }
+
+    /* Character modal */
+    .char-modal {
+      background: #181818; border-radius: 8px;
+      max-width: 860px; width: 100%;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .char-modal-hero { position: relative; height: 320px; overflow: hidden; border-radius: 8px 8px 0 0; }
+    .char-modal-hero img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
+    .char-modal-hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, #181818 0%, rgba(24,24,24,0.45) 55%, transparent 100%);
+    }
+    .modal-close {
+      position: absolute; top: 14px; right: 14px;
+      background: rgba(0,0,0,0.65); border: none; color: white;
+      width: 36px; height: 36px; border-radius: 50%; font-size: 20px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s; line-height: 1;
+    }
+    .modal-close:hover { background: rgba(0,0,0,0.85); }
+    .char-name-overlay {
+      position: absolute; bottom: 20px; left: 24px; right: 80px;
+    }
+    .char-name-overlay h2 { font-size: 26px; font-weight: 700; color: white; line-height: 1.1; }
+    .char-modal-body { padding: 20px 24px 28px; }
+    .char-modal-columns { display: grid; grid-template-columns: 1fr 220px; gap: 36px; margin-bottom: 28px; }
+    .char-meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .char-meta-text { font-size: 13px; color: var(--ink-muted); }
+    .char-meta-sep { font-size: 13px; color: #444; }
+    .char-meta-pill { border: 1px solid var(--ink-muted); padding: 1px 7px; font-size: 11px; color: var(--ink-muted); border-radius: 3px; letter-spacing: 0.03em; }
+    .char-desc { color: #d3d3d3; font-size: 15px; line-height: 1.7; margin-bottom: 18px; }
+    .char-right-row { margin-bottom: 16px; }
+    .char-right-label { font-size: 13px; color: var(--ink-muted); margin-bottom: 3px; }
+    .char-right-value { font-size: 14px; color: white; font-weight: 500; line-height: 1.4; }
+    .intel-quote {
+      border-left: 2px solid #333; padding-left: 14px;
+      color: #a0a0a0; font-size: 14px; line-height: 1.65; font-style: italic; margin: 0;
+    }
+    .intel-report { margin-bottom: 24px; }
+    .intel-report-header {
+      font-size: 13px; font-weight: 600; color: var(--ink-muted);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .intel-report-header span.line { display: inline-block; width: 18px; height: 1px; background: var(--ink-muted); }
+    .intel-quote {
+      border-left: 2px solid #333; padding-left: 16px;
+      color: #d3d3d3; font-size: 14px; line-height: 1.65; font-style: italic;
+    }
+    .watch-section h3 { font-size: 16px; font-weight: 600; color: white; margin-bottom: 12px; }
+    .watch-cards { display: flex; gap: 8px; overflow-x: auto; }
+    .watch-card { flex-shrink: 0; cursor: pointer; }
+    .watch-card-img {
+      width: 160px; height: 90px; border-radius: 4px;
+      overflow: hidden; background: var(--surface-2); margin-bottom: 6px;
+    }
+    .watch-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .watch-card-label { font-size: 11px; color: #d3d3d3; }
+
+    /* Quiz / Trivia modals */
+    .game-modal {
+      background: #181818; border-radius: 8px;
+      max-width: 600px; width: 100%; padding: 40px;
+      position: relative;
+    }
+    .close-x {
+      position: absolute; top: 16px; right: 16px;
+      background: transparent; border: none; color: var(--ink-muted);
+      font-size: 24px; cursor: pointer; line-height: 1;
+    }
+    .close-x:hover { color: white; }
+
+    /* Devil Fruit Matching Game */
+    .dfgame-modal {
+      background: #141414; border-radius: 8px;
+      width: 100%; max-width: 600px;
+      max-height: calc(100vh - 60px); overflow-y: auto;
+      position: relative;
+    }
+    .dfgame-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 44px 12px 20px;
+    }
+    .dfgame-title { font-size: 18px; font-weight: 700; color: white; }
+    .dfgame-stats { display: flex; gap: 20px; }
+    .dfgame-stat { font-size: 13px; color: var(--ink-muted); }
+    .dfgame-stat strong { color: white; }
+    .dfgame-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 6px; padding: 16px 20px 16px;
+    }
+    .dfgame-grid-fade { opacity: 0; transition: opacity 0.55s ease; pointer-events: none; }
+    .dfgame-win-letter {
+      font-size: 40px; font-weight: 900; color: white; letter-spacing: -0.02em;
+    }
+    .dfgame-results {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 24px; padding: 52px 40px 56px; text-align: center;
+      animation: fadeOverlay 0.5s ease;
+    }
+    .dfgame-result-stats {
+      display: flex; gap: 48px;
+    }
+    .dfgame-result-stat { display: flex; flex-direction: column; gap: 4px; }
+    .dfgame-result-value { font-size: 36px; font-weight: 700; color: white; }
+    .dfgame-result-label { font-size: 12px; color: var(--ink-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+    .dfgame-card { aspect-ratio: 3/4; cursor: pointer; perspective: 600px; }
+    .dfgame-card.locked { cursor: default; }
+    .dfgame-card-inner {
+      width: 100%; height: 100%;
+      position: relative; transform-style: preserve-3d;
+      transition: transform 0.45s cubic-bezier(0.4,0,0.2,1);
+    }
+    .dfgame-card.flipped .dfgame-card-inner,
+    .dfgame-card.matched .dfgame-card-inner { transform: rotateY(180deg); }
+    .dfgame-card-back, .dfgame-card-front {
+      position: absolute; inset: 0; border-radius: 6px;
+      backface-visibility: hidden; overflow: hidden;
+    }
+    .dfgame-card-back {
+      background: #000;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .dfgame-card-back img {
+      width: 100%; height: 100%; object-fit: cover; object-position: center;
+    }
+    .dfgame-card-front {
+      transform: rotateY(180deg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 8px; padding: 10px; border: 2px solid transparent;
+    }
+    .dfgame-card.matched .dfgame-card-front {
+      border-color: #46D369;
+      box-shadow: inset 0 0 14px rgba(70,211,105,0.18);
+    }
+    .dfgame-char-card { background: #111; padding: 0; gap: 0; }
+    .dfgame-char-card img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+    .dfgame-char-card.clickable:hover { opacity: 0.88; cursor: pointer; }
+    .dfgame-fruit-img { width: 72%; height: 68%; object-fit: contain; }
+    .dfgame-fruit-name {
+      font-size: 7.5px; font-weight: 600; color: #A3A3A3;
+      text-align: center; letter-spacing: 0.04em; line-height: 1.3; text-transform: uppercase;
+    }
+    .dfgame-win-badge {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, #FFD700, #FF6B00);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 38px; box-shadow: 0 0 40px rgba(255,200,0,0.35);
+    }
+    .game-eyebrow {
+      font-size: 11px; color: var(--red); font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 12px;
+    }
+    .game-question { font-size: 20px; font-weight: 600; color: white; margin-bottom: 24px; line-height: 1.45; }
+    .progress-track { height: 3px; background: #333; border-radius: 2px; margin-bottom: 8px; }
+    .progress-fill { height: 100%; background: var(--red); border-radius: 2px; transition: width 0.4s ease; }
+    .progress-meta { display: flex; justify-content: space-between; margin-bottom: 28px; }
+    .progress-meta span { font-size: 12px; color: var(--ink-muted); }
+    .progress-meta .score { color: var(--green); font-weight: 600; }
+    .options-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .opt-btn {
+      background: var(--surface-2); border: 2px solid #3a3a3a;
+      color: white; padding: 14px 18px; border-radius: 6px;
+      cursor: pointer; font-size: 15px; text-align: left; width: 100%;
+      transition: border-color 0.15s, background 0.15s; font-family: inherit;
+    }
+    .opt-btn:hover:not(:disabled) { background: #3a3a3a; border-color: var(--red); }
+    .opt-btn.chosen { background: rgba(229,9,20,0.18); border-color: var(--red); }
+    .opt-btn.correct { background: rgba(70,211,105,0.2); border-color: var(--green); cursor: default; }
+    .opt-btn.wrong { background: rgba(229,9,20,0.2); border-color: var(--red); cursor: default; }
+    .opt-btn.revealed { cursor: default; }
+    .fact-box {
+      background: var(--surface-1); border-radius: 6px;
+      padding: 14px 16px; font-size: 13px; color: #d3d3d3; line-height: 1.6;
+      margin-top: 4px;
+    }
+    .result-screen { text-align: center; padding: 8px 0 4px; }
+    .result-screen h2 { font-size: 26px; font-weight: 700; margin: 0 0 0; color: white; }
+    .result-portrait {
+      width: 140px; height: 140px; border-radius: 16px;
+      overflow: hidden; margin: 0 auto 18px;
+      border: 3px solid;
+    }
+    .result-portrait img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+    .result-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 14px 0 20px; }
+    .result-tag { padding: 5px 15px; border: 1px solid rgba(255,255,255,0.28); border-radius: 9999px; font-size: 13px; color: rgba(255,255,255,0.72); background: transparent; letter-spacing: 0.01em; }
+    .result-desc { color: #c8c8c8; font-size: 15px; line-height: 1.65; margin-bottom: 24px; text-align: center; }
+    .result-label { font-size: 13px; color: var(--ink-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 8px; }
+    .result-score { font-size: 42px; font-weight: 700; color: white; margin-bottom: 8px; }
+    .result-msg { color: var(--ink-muted); font-size: 16px; margin-bottom: 28px; line-height: 1.55; }
+    .btn-center { display: flex; justify-content: center; }
+    .result-badge-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 13px 32px; background: white; color: #141414;
+      border: none; border-radius: 4px; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: background 0.2s; width: 100%; margin-bottom: 12px;
+    }
+    .result-badge-btn:hover:not(:disabled) { background: rgba(255,255,255,0.85); }
+    .result-badge-btn:disabled { cursor: default; }
+    .badge-icon-wrap { position: relative; width: 18px; height: 18px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .badge-icon-plus, .badge-icon-check { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; line-height: 1; transition: opacity 0.25s, transform 0.25s; }
+    .badge-icon-plus { opacity: 1; transform: rotate(0deg) scale(1); }
+    .badge-icon-check { opacity: 0; transform: scale(0.5); }
+    .badge-added .badge-icon-plus { opacity: 0; transform: rotate(45deg) scale(0.5); }
+    .badge-added .badge-icon-check { opacity: 1; transform: scale(1); }
+
+    /* Footer */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 4% 64px;
+      color: var(--ink-muted); font-size: 13px;
+    }
+    .footer-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; flex-wrap: wrap; gap: 24px; }
+    .footer-logo { color: var(--red); font-size: 24px; font-weight: 900; font-style: italic; letter-spacing: -0.04em; }
+    .footer-links { display: flex; gap: 24px; flex-wrap: wrap; }
+    .footer-links a { color: var(--ink-muted); text-decoration: none; font-size: 13px; }
+    .footer-links a:hover { color: white; }
+    .footer-legal { font-size: 12px; color: #555; line-height: 1.7; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .podcast-grid { grid-template-columns: 1fr; }
+      .games-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .hero-title { font-size: 56px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="root">
+  <div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#A3A3A3;font-size:15px;">
+    Loading One Piece Fandom Experience...
+  </div>
+</div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ─── DATA ──────────────────────────────────────────────────────────────────
+
+const CHARACTERS = [
+  {
+    id: 'luffy',
+    name: 'Monkey D. Luffy',
+    alias: 'Straw Hat Luffy',
+    actor: 'Inaki Godoy',
+    bounty: '3,000,000,000',
+    fruit: 'Gomu Gomu no Mi',
+    role: 'Captain',
+    posterImg: 'poster-luffy.jpg',
+    portrait: 'https://picsum.photos/seed/luffy-portrait-op/300/360',
+    heroImg: 'char-hero-luffy.png',
+    description: 'Free-spirited and relentlessly optimistic, Luffy stretches the limits of what a captain can be. His rubber body, powered by the Gomu Gomu no Mi Devil Fruit, is matched only by his boundless capacity to earn loyalty through sheer force of heart. His unshakeable dream: to find the One Piece and become King of the Pirates.',
+    verdict: '"His recklessness borders on the miraculous. He does not conquer enemies with strategy. He outlasts them with belief. Approach with extreme caution."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [
+      { label: 'Ep. 236', img: 'luffy-ep236.png' },
+      { label: 'Ep. 309', img: 'luffy-ep309.png' },
+      { label: 'Ep. 405', img: 'luffy-ep405.png' },
+      { label: 'Ep. 505', img: 'luffy-ep505.png' },
+    ],
+    color: '#E50914',
+    rot: '2deg',
+  },
+  {
+    id: 'zoro',
+    name: 'Roronoa Zoro',
+    alias: 'Pirate Hunter Zoro',
+    actor: 'Mackenyu',
+    bounty: '1,111,000,100',
+    fruit: 'None - Three Sword Style',
+    role: 'First Mate / Swordsman',
+    posterImg: 'poster-zoro.jpg',
+    portrait: 'https://picsum.photos/seed/zoro-portrait-op/300/360',
+    description: 'The stoic, three-sword-wielding first mate of the Straw Hat Pirates. Zoro took a vow never to lose again after the death of his childhood rival Kuina, and carries that vow like a fourth blade. He will become the world\'s greatest swordsman, or die trying. Probably while lost.',
+    verdict: '"Three-sword style. Zero remorse. His loyalty to his captain is the only thing more dangerous than his fighting ability."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [
+      { label: 'Ep. 2 - The Man in the Straw Hat', img: 'https://picsum.photos/seed/op-zoro-watch1/200/112' },
+      { label: 'Ep. 4 - The Pirates Are Coming', img: 'https://picsum.photos/seed/op-zoro-watch2/200/112' },
+      { label: 'One Piece Film: Z', img: 'https://picsum.photos/seed/op-film-z-watch/200/112' },
+    ],
+    color: '#2ECC71',
+    rot: '-2deg',
+  },
+  {
+    id: 'nami',
+    name: 'Nami',
+    alias: 'Cat Burglar Nami',
+    actor: 'Emily Rudd',
+    bounty: '366,000,000',
+    fruit: 'None - Climatact',
+    role: 'Navigator',
+    posterImg: 'poster-nami.png',
+    portrait: 'https://picsum.photos/seed/nami-portrait-op/300/360',
+    description: 'The brilliant navigator of the Straw Hat Pirates, capable of reading weather with precision that borders on supernatural. Her complicated past - stolen from her village by the Fish-Man pirate Arlong - forged a fierce independence that eventually softened into hard-won trust. Her dream: to chart a complete map of the entire world.',
+    verdict: '"Her ability to read weather patterns borders on precognition. The crew would be dead at sea without her, and she knows it."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [
+      { label: 'Ep. 5 - Caught', img: 'https://picsum.photos/seed/op-nami-watch1/200/112' },
+      { label: 'Ep. 6 - The Chef and the Chore Boy', img: 'https://picsum.photos/seed/op-nami-watch2/200/112' },
+      { label: 'One Piece Film: Gold', img: 'https://picsum.photos/seed/op-film-gold-watch/200/112' },
+    ],
+    color: '#F39C12',
+    rot: '-1deg',
+  },
+  {
+    id: 'sanji',
+    name: 'Vinsmoke Sanji',
+    alias: 'Black Leg Sanji',
+    actor: 'Taz Skylar',
+    bounty: '1,032,000,000',
+    fruit: 'None - Kick Combat',
+    role: 'Cook',
+    posterImg: 'poster-sanji.jpg',
+    portrait: 'https://picsum.photos/seed/sanji-portrait-op/300/360',
+    description: 'The crew\'s cook fights exclusively with his legs to protect the hands that feed his crew. His chivalry towards women is absolute, his cooking is transcendent, and his dream is to find the mythical All Blue - a place where every ocean in the world converges, and all of the world\'s fish coexist in one place.',
+    verdict: '"Lethal on his feet. Completely ineffective in the presence of any woman. His restraint in one area does not extend to combat."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [
+      { label: 'Ep. 6 - The Chef and the Chore Boy', img: 'https://picsum.photos/seed/op-sanji-watch1/200/112' },
+      { label: 'Ep. 8 - Worst in the East', img: 'https://picsum.photos/seed/op-sanji-watch2/200/112' },
+      { label: 'One Piece Film: Red', img: 'https://picsum.photos/seed/op-film-red2-watch/200/112' },
+    ],
+    color: '#3498DB',
+    rot: '1deg',
+  },
+  {
+    id: 'chopper',
+    name: 'Tony Tony Chopper',
+    alias: 'Cotton Candy Lover Chopper',
+    actor: 'Anime Character',
+    bounty: '1,000',
+    fruit: 'Hito Hito no Mi',
+    role: 'Doctor',
+    posterImg: 'poster-chopper.png',
+    portrait: 'https://picsum.photos/seed/chopper-portrait-op/300/360',
+    description: 'The crew\'s doctor, a reindeer who ate the Human-Human Devil Fruit and gained the ability to think and speak like a person. Despite his famously low bounty, Chopper\'s Monster Point makes him one of the most destructive fighters on the crew. His dream is to become a doctor who can cure any disease.',
+    verdict: '"Bounty set at 100 berries due to misidentification as a pet. This was an error. Do not underestimate him."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [
+      { label: 'One Piece - Drum Island Arc', img: 'https://picsum.photos/seed/op-chopper-watch1/200/112' },
+      { label: 'One Piece Film: Red', img: 'https://picsum.photos/seed/op-chopper-watch2/200/112' },
+      { label: 'One Piece: Stampede', img: 'https://picsum.photos/seed/op-chopper-watch3/200/112' },
+    ],
+    color: '#E74C3C',
+    rot: '-1deg',
+  },
+  {
+    id: 'franky',
+    name: 'Franky',
+    alias: 'Iron Man Franky',
+    actor: 'Anime Character',
+    bounty: '94,000,000',
+    fruit: 'None - Cyborg Body',
+    role: 'Shipwright',
+    posterImg: 'poster-franky.png',
+    portrait: 'https://picsum.photos/seed/franky-portrait-op/300/360',
+    description: 'The crew\'s shipwright and self-proclaimed super cyborg. Franky rebuilt his own body with scavenged ship parts after a near-fatal accident, and later upgraded himself further with Vegapunk\'s technology. He built the Thousand Sunny from the Adam Wood of Skypiea. His dream: to build a ship that can sail to the end of the world.',
+    verdict: '"Heavily weaponised. Literally. Classified as a walking warship. Extreme threat to Marine vessels."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [
+      { label: 'One Piece - Water Seven Arc', img: 'https://picsum.photos/seed/op-franky-watch1/200/112' },
+      { label: 'One Piece Film: Gold', img: 'https://picsum.photos/seed/op-franky-watch2/200/112' },
+      { label: 'One Piece: Stampede', img: 'https://picsum.photos/seed/op-franky-watch3/200/112' },
+    ],
+    color: '#3498DB',
+    rot: '2deg',
+  },
+  {
+    id: 'jinbe',
+    name: 'Jinbe',
+    alias: 'Knight of the Sea Jinbe',
+    actor: 'Anime Character',
+    bounty: '438,000,000',
+    fruit: 'None - Fish-Man Karate',
+    role: 'Helmsman',
+    posterImg: 'poster-jinbe.jpg',
+    portrait: 'https://picsum.photos/seed/jinbe-portrait-op/300/360',
+    description: 'The crew\'s helmsman and a legendary Fish-Man Karate master. A former Warlord of the Sea and captain of the Sun Pirates, Jinbe gave up his title to stand with Luffy. His mastery over seawater makes him one of the most powerful fighters in the crew, and his steadiness is the ballast the Straw Hats always needed.',
+    verdict: '"Former Warlord. Relinquished his status voluntarily to side with a rookie pirate. His loyalty is absolute and therefore deeply dangerous."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [
+      { label: 'One Piece - Fish-Man Island Arc', img: 'https://picsum.photos/seed/op-jinbe-watch1/200/112' },
+      { label: 'One Piece Film: Red', img: 'https://picsum.photos/seed/op-jinbe-watch2/200/112' },
+      { label: 'One Piece: Stampede', img: 'https://picsum.photos/seed/op-jinbe-watch3/200/112' },
+    ],
+    color: '#1A6B9A',
+    rot: '-2deg',
+  },
+  {
+    id: 'usopp',
+    name: 'Usopp',
+    alias: 'God Usopp',
+    actor: 'Jacob Romero',
+    bounty: '200,000,000',
+    fruit: 'None - Marksmanship',
+    role: 'Sharpshooter',
+    posterImg: 'poster-usopp.png',
+    portrait: 'https://picsum.photos/seed/usopp-portrait-op/300/360',
+    description: 'The long-nosed marksman whose tall tales conceal extraordinary precision with a slingshot. Usopp\'s greatest power is not his aim - it\'s his refusal to be a coward when it truly matters. He is becoming the brave warrior of the sea he always claimed to be. His lies are, somehow, becoming true.',
+    verdict: '"His accuracy at distance is alarming for a civilian. His self-belief is inconsistent. Do not underestimate the inconsistent ones."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [
+      { label: 'Ep. 1 - Romance Dawn', img: 'https://picsum.photos/seed/op-usopp-watch1/200/112' },
+      { label: 'Ep. 7 - The Girl With the Sawfish Tattoo', img: 'https://picsum.photos/seed/op-usopp-watch2/200/112' },
+      { label: 'One Piece: Stampede', img: 'https://picsum.photos/seed/op-stampede-watch/200/112' },
+    ],
+    color: '#8B6914',
+    rot: '1deg',
+  },
+  {
+    id: 'robin',
+    name: 'Nico Robin',
+    alias: 'Devil Child Robin',
+    actor: 'Tati Gabrielle',
+    bounty: '130,000,000',
+    fruit: 'Hana Hana no Mi',
+    role: 'Archaeologist',
+    posterImg: 'poster-robin.jpg',
+    portrait: 'https://picsum.photos/seed/robin-portrait-op/300/360',
+    description: 'The only living person who can read Poneglyphs - the ancient indestructible stones that record a True History the World Government has tried to erase. Robin has survived in a world that tried to destroy her since she was eight years old by being smarter and more ruthless than everyone who came after her.',
+    verdict: '"She is the most dangerous intellectual on the Grand Line. The World Government has feared her since childhood. That fear is entirely justified."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [
+      { label: 'Ep. 4 - The Pirates Are Coming', img: 'https://picsum.photos/seed/op-robin-watch1/200/112' },
+      { label: 'Ep. 8 - Worst in the East', img: 'https://picsum.photos/seed/op-robin-watch2/200/112' },
+      { label: 'One Piece Film: Red', img: 'https://picsum.photos/seed/op-robin-watch3/200/112' },
+    ],
+    color: '#9B59B6',
+    rot: '-1deg',
+  },
+  {
+    id: 'brook',
+    name: 'Brook',
+    alias: 'Soul King Brook',
+    actor: 'Anime Character',
+    bounty: '383,000,000',
+    fruit: 'Yomi Yomi no Mi',
+    role: 'Musician',
+    posterImg: 'poster-brook.webp',
+    portrait: 'https://picsum.photos/seed/brook-portrait-op/300/360',
+    description: 'The crew\'s musician, a living skeleton who ate the Revive-Revive Fruit and came back to life after death - arriving to find his body had decomposed to bare bones. Known across the world as "Soul King," his music can soothe souls literally, and his sword style can cut the soul itself.',
+    verdict: '"Deceased. Also extremely dangerous. The combination is unprecedented and we have no protocol for it."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [
+      { label: 'One Piece - Thriller Bark Arc', img: 'https://picsum.photos/seed/op-brook-watch1/200/112' },
+      { label: 'One Piece Film: Gold', img: 'https://picsum.photos/seed/op-brook-watch2/200/112' },
+      { label: 'One Piece: Stampede', img: 'https://picsum.photos/seed/op-brook-watch3/200/112' },
+    ],
+    color: '#7F8C8D',
+    rot: '2deg',
+  },
+];
+
+const WATCHLIST = [
+  {
+    id: 'la-s1', title: 'One Piece', subtitle: 'Live Action Series',
+    year: '2023', badge: 'New Season',
+    bg: 'linear-gradient(135deg, #0B2240, #1A4A8C)',
+    tmdb: 'watchlist-la.jpg', imgPosition: 'bottom',
+  },
+  {
+    id: 'la-s1-2', title: 'One Piece', subtitle: 'Live Action Series',
+    year: '2023', badge: 'Recently Added',
+    bg: 'linear-gradient(135deg, #0B2240, #1A4A8C)',
+    tmdb: 'watchlist-la2.webp',
+  },
+  {
+    id: 'bonus', title: 'Bonus Content', subtitle: 'Behind the Scenes',
+    year: '2023', badge: null,
+    bg: 'linear-gradient(135deg, #1A1A2E, #16213E)',
+    tmdb: 'watchlist-3.png',
+  },
+  {
+    id: 'east-blue', title: 'Episode of East Blue', subtitle: 'Special',
+    year: '2017', badge: null,
+    bg: 'linear-gradient(135deg, #003040, #006080)',
+    tmdb: 'watchlist-4.png',
+  },
+  {
+    id: 'chopper', title: 'Miracle Winter', subtitle: 'Movie',
+    year: '2008', badge: null,
+    bg: 'linear-gradient(135deg, #0D3B5E, #1565A4)',
+    tmdb: 'watchlist-5.png',
+  },
+  {
+    id: 'alabasta', title: 'One Piece Movie', subtitle: 'Movie',
+    year: '2000', badge: null,
+    bg: 'linear-gradient(135deg, #4A2000, #8B4513)',
+    tmdb: 'watchlist-6.png',
+  },
+  {
+    id: 'skypeia', title: 'Episode of Skypeia', subtitle: 'Special',
+    year: '2018', badge: null,
+    bg: 'linear-gradient(135deg, #1A3A1A, #2E6B2E)',
+    tmdb: 'watchlist-7.png',
+  },
+  {
+    id: 'strong-world', title: 'One Piece Film: Strong World', subtitle: 'Movie',
+    year: '2009', badge: null,
+    bg: 'linear-gradient(135deg, #002B1A, #006B3A)',
+    tmdb: 'watchlist-8.png',
+  },
+  {
+    id: '3d2y', title: 'One Piece 3D2Y', subtitle: 'Special',
+    year: '2014', badge: null,
+    bg: 'linear-gradient(135deg, #3A0000, #8B0000)',
+    tmdb: 'watchlist-9.png',
+  },
+  {
+    id: 'film-z', title: 'One Piece Film: Z', subtitle: 'Movie',
+    year: '2012', badge: null,
+    bg: 'linear-gradient(135deg, #1A1A1A, #444)',
+    tmdb: 'watchlist-10.png',
+  },
+  {
+    id: 'heart-of-gold', title: 'Heart of Gold', subtitle: 'Special',
+    year: '2016', badge: null,
+    bg: 'linear-gradient(135deg, #6B5800, #B8960C)',
+    tmdb: 'watchlist-11.png',
+  },
+  {
+    id: 'film-gold', title: 'One Piece Film: Gold', subtitle: 'Movie',
+    year: '2016', badge: null,
+    bg: 'linear-gradient(135deg, #5C4800, #C9A800)',
+    tmdb: 'watchlist-12.png',
+  },
+  {
+    id: 'film-red', title: 'One Piece Film: Red', subtitle: 'Movie',
+    year: '2022', badge: 'Recently Added',
+    bg: 'linear-gradient(135deg, #6B0000, #C41E3A)',
+    tmdb: 'watchlist-13.png',
+  },
+  {
+    id: 'fan-letter', title: 'One Piece Fan Letter', subtitle: 'Short Film',
+    year: '2022', badge: null,
+    bg: 'linear-gradient(135deg, #1A1A2E, #2D2D4E)',
+    tmdb: 'watchlist-14.png',
+  },
+];
+
+const PODCAST_EPISODES = [
+  { num: 1, title: 'Loguetown (featuring Iñaki Godoy and Eiichiro Oda)', duration: '28m' },
+  { num: 2, title: 'Reverse Mountain (featuring Emily Rudd)', duration: '30m' },
+  { num: 3, title: 'Whisky Peak (featuring Mackenyu)', duration: '17m' },
+  { num: 4, title: 'Little Garden, Part 1 (featuring Jacob Romero)', duration: '16m' },
+  { num: 5, title: 'Little Garden, Part 2 (featuring Taz Skylar)', duration: '20m' },
+  { num: 6, title: 'Drum Island (featuring Charithra Chandran and Mikaela Hoover)', duration: '28m' },
+];
+
+// ─── DEVIL FRUIT GAME DATA ──────────────────────────────────────────────────
+
+const DEVIL_FRUITS = [
+  { id: 'gomu', fruitName: 'Gomu Gomu no Mi', charName: 'Luffy',       img: 'gomu-gomu.png', charImg: 'char-luffy.png',       fruitColor: '#6A1B9A', charColor: '#E50914', charDataKey: 'luffy',      fact: 'Luffy accidentally ate the Gomu Gomu no Mi at age 7 from a chest belonging to Red-Haired Shanks — making his body permanently rubber.' },
+  { id: 'mera', fruitName: 'Mera Mera no Mi', charName: 'Ace',         img: 'mera-mera.png', charImg: 'char-ace.png',         fruitColor: '#E65100', charColor: '#FF6D00', charDataKey: 'ace',        fact: 'Ace\'s fire was extinguished by Akainu\'s magma — because magma burns hotter than fire. The Logia hierarchy has rules.' },
+  { id: 'yami', fruitName: 'Yami Yami no Mi', charName: 'Blackbeard',  img: 'yami-yami.png', charImg: 'char-blackbeard.png',  fruitColor: '#4A148C', charColor: '#AB47BC', charDataKey: 'blackbeard', fact: 'The Yami Yami no Mi is the only Logia that cannot dodge damage by becoming its element — darkness absorbs everything, including pain.' },
+  { id: 'ope',  fruitName: 'Ope Ope no Mi',   charName: 'Law',         img: 'ope-ope.png',   charImg: 'char-law.png',         fruitColor: '#B71C1C', charColor: '#00897B', charDataKey: 'law',        fact: 'The Ope Ope no Mi can grant immortality to another person — at the cost of the user\'s own life. The World Government offered a nation for it.' },
+  { id: 'bara', fruitName: 'Bara Bara no Mi', charName: 'Buggy',       img: 'bara-bara.png', charImg: 'char-buggy.png',       fruitColor: '#C62828', charColor: '#FBC02D', charDataKey: 'buggy',      fact: 'Buggy ate the Bara Bara no Mi by accident as a child — the split saved him from drowning but scattered his parts before he could recover them all.' },
+  { id: 'hito', fruitName: 'Hito Hito no Mi', charName: 'Chopper',     img: 'hito-hito.png', charImg: 'char-chopper.png',     fruitColor: '#880E4F', charColor: '#F48FB1', charDataKey: 'chopper',    fact: 'Chopper is a reindeer who ate the Hito Hito no Mi — the Human-Human Fruit. It gave him human intelligence, the ability to speak, and a lifelong dream to cure any disease.' },
+  { id: 'hana', fruitName: 'Hana Hana no Mi', charName: 'Robin',       img: 'hana-hana.png', charImg: 'char-robin.png',       fruitColor: '#880E4F', charColor: '#F06292', charDataKey: 'robin',      fact: 'Robin ate the Hana Hana no Mi at age 8 — blooming body parts across surfaces to escape from Ohara before the World Government burned it to ash.' },
+  { id: 'yomi', fruitName: 'Yomi Yomi no Mi', charName: 'Brook',       img: 'yomi-yomi.png', charImg: 'char-brook.png',       fruitColor: '#37474F', charColor: '#B0BEC5', charDataKey: 'brook',      fact: 'Brook died and his soul wandered for over a year before finding its way back to his body — which had fully decomposed to a skeleton.' },
+  { id: 'ito',  fruitName: 'Ito Ito no Mi',   charName: 'Doflamingo',  img: 'ito-ito.png',   charImg: 'char-doflamingo.png',  fruitColor: '#455A64', charColor: '#F48FB1', charDataKey: 'doflamingo', fact: 'Doflamingo\'s Birdcage — a dome of inescapable string threads — slowly shrank to engulf an entire island. It could only be stopped by destroying Doflamingo.' },
+  { id: 'gura', fruitName: 'Gura Gura no Mi', charName: 'Whitebeard',  img: 'gura-gura.png', charImg: 'char-whitebeard.png',  fruitColor: '#1565C0', charColor: '#795548', charDataKey: 'whitebeard', fact: 'Whitebeard\'s quake fist cracked the very air above Marineford. His fruit is said to hold the power to destroy the world — and he never once used it for conquest.' },
+];
+
+const GAME_CHAR_DATA = {
+  ace: {
+    id: 'ace', name: 'Portgas D. Ace', alias: 'Fire Fist Ace', actor: 'Ace — Anime', bounty: '550,000,000',
+    fruit: 'Mera Mera no Mi', role: 'Commander, Whitebeard Pirates', color: '#FF6D00',
+    portrait: 'https://picsum.photos/seed/ace-op-portrait/300/360',
+    description: 'Luffy\'s sworn brother and Commander of the Whitebeard Pirates\' 2nd Division. His fire punches could burn the sea itself. Akainu\'s magma proved hotter. The world paid for that fact.',
+    verdict: '"Fire Fist Ace — son of the Pirate King. Every Marine wanted him alive. The one who killed him made an enemy of every pirate in the world."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [{ label: 'Marineford Arc', img: 'https://picsum.photos/seed/op-ace-w1/200/112' }, { label: 'One Piece Film: Z', img: 'https://picsum.photos/seed/op-ace-w2/200/112' }],
+  },
+  blackbeard: {
+    id: 'blackbeard', name: 'Marshall D. Teach', alias: 'Blackbeard', actor: 'Blackbeard — Anime', bounty: '3,996,000,000',
+    fruit: 'Yami Yami no Mi', role: 'Emperor of the Sea', color: '#AB47BC',
+    portrait: 'https://picsum.photos/seed/blackbeard-op-portrait/300/360',
+    description: 'The only person in recorded history to wield two Devil Fruits without dying. He waited decades for the right fruit, killed a crewmate for it, and stole a second from a corpse. Everything was planned.',
+    verdict: '"This man has been patient for twenty years. Every single move was deliberate. We have no protocol for someone who plans this far ahead."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [{ label: 'One Piece - Jaya Arc', img: 'https://picsum.photos/seed/op-bb-w1/200/112' }, { label: 'One Piece - Marineford Arc', img: 'https://picsum.photos/seed/op-bb-w2/200/112' }],
+  },
+  law: {
+    id: 'law', name: 'Trafalgar D. Water Law', alias: 'The Surgeon of Death', actor: 'Law — Anime', bounty: '3,000,000,000',
+    fruit: 'Ope Ope no Mi', role: 'Captain, Heart Pirates', color: '#00897B',
+    portrait: 'https://picsum.photos/seed/law-op-portrait/300/360',
+    description: 'Inside his ROOM, Law can rearrange anything — organs, limbs, entire ships. His fruit was called the Ultimate Devil Fruit. The World Government offered a nation-state for it. He said no.',
+    verdict: '"The Surgeon of Death. His ROOM allows complete spatial manipulation. Inside it, nothing is safe. Nothing can be guaranteed to stay where you left it."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [{ label: 'One Piece - Punk Hazard', img: 'https://picsum.photos/seed/op-law-w1/200/112' }, { label: 'One Piece: Stampede', img: 'https://picsum.photos/seed/op-law-w2/200/112' }],
+  },
+  buggy: {
+    id: 'buggy', name: 'Buggy the Star Clown', alias: 'Buggy', actor: 'Buggy — Anime', bounty: '3,189,000,000',
+    fruit: 'Bara Bara no Mi', role: 'Emperor of the Sea', color: '#FBC02D',
+    portrait: 'https://picsum.photos/seed/buggy-op-portrait/300/360',
+    description: 'The accidental Emperor. Buggy has stumbled into fame, a cross-guild syndicate, and Emperor status through sheer cumulative misunderstanding. His crew is convinced he is a genius. The outcome is the same.',
+    verdict: '"Has somehow become an Emperor through a chain of incidents none of which he controlled. His crew believes he is a mastermind. This is incorrect. The result is identical."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [{ label: 'Ep. 1 - Romance Dawn', img: 'https://picsum.photos/seed/op-buggy-w1/200/112' }, { label: 'One Piece Film: Red', img: 'https://picsum.photos/seed/op-buggy-w2/200/112' }],
+  },
+  doflamingo: {
+    id: 'doflamingo', name: 'Donquixote Doflamingo', alias: 'Heavenly Yaksha', actor: 'Doflamingo — Anime', bounty: '340,000,000',
+    fruit: 'Ito Ito no Mi', role: 'Former Warlord / King of Dressrosa', color: '#F48FB1',
+    portrait: 'https://picsum.photos/seed/doflamingo-op-portrait/300/360',
+    description: 'A World Noble who renounced his lineage and built an underground empire. His strings can slice steel, puppet any living creature, and weave a Birdcage around an entire island with no escape.',
+    verdict: '"Former Celestial Dragon turned pirate Warlord. Operated the world\'s largest black market for thirty years while posing as a legitimate king. There is no playbook for someone like this."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [{ label: 'One Piece - Dressrosa Arc', img: 'https://picsum.photos/seed/op-doffy-w1/200/112' }, { label: 'One Piece Film: Gold', img: 'https://picsum.photos/seed/op-doffy-w2/200/112' }],
+  },
+  whitebeard: {
+    id: 'whitebeard', name: 'Edward Newgate', alias: 'Whitebeard', actor: 'Whitebeard — Anime', bounty: '5,046,000,000',
+    fruit: 'Gura Gura no Mi', role: 'Emperor of the Sea (former)', color: '#795548',
+    portrait: 'https://picsum.photos/seed/whitebeard-op-portrait/300/360',
+    description: 'The world\'s strongest man. His quake fist cracked the air above Marineford. He died standing upright, covered in wounds from swords and bullets, and never once turned his back on his enemies.',
+    verdict: '"Deceased. Never retreated. Never turned his back in his final battle. The strongest man in the world died on his feet. The world order he held together died with him."',
+    verdictLabel: 'Marine Intelligence Dossier',
+    watchCards: [{ label: 'One Piece - Marineford Arc', img: 'https://picsum.photos/seed/op-wb-w1/200/112' }, { label: 'One Piece Film: Z', img: 'https://picsum.photos/seed/op-wb-w2/200/112' }],
+  },
+};
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function makeGameCards() {
+  return shuffleArray(
+    DEVIL_FRUITS.flatMap(fruit => [
+      { id: `${fruit.id}-fruit`, pairId: fruit.id, type: 'fruit', fruit },
+      { id: `${fruit.id}-char`,  pairId: fruit.id, type: 'char',  fruit },
+    ])
+  );
+}
+
+const QUIZ_QUESTIONS = [
+  {
+    question: 'When you face an impossible obstacle, your first instinct is...',
+    options: [
+      { text: 'Charge at it with everything you have', character: 'luffy' },
+      { text: 'Assess the angles, then cut through it precisely', character: 'zoro' },
+      { text: 'Find the smartest route around it', character: 'nami' },
+      { text: 'Build something clever to solve it from a distance', character: 'usopp' },
+    ],
+  },
+  {
+    question: 'The one thing you would never compromise on:',
+    options: [
+      { text: 'My crew. Full stop.', character: 'luffy' },
+      { text: 'My vow to surpass the greatest who ever lived', character: 'zoro' },
+      { text: 'My freedom and my map of the world', character: 'nami' },
+      { text: 'The truth buried in history that everyone is hiding', character: 'robin' },
+    ],
+  },
+  {
+    question: 'What does food mean to you?',
+    options: [
+      { text: 'Give me the biggest portion. Now.', character: 'luffy' },
+      { text: 'Sustenance. Nothing more needed.', character: 'zoro' },
+      { text: 'A good meal is worth stealing for', character: 'nami' },
+      { text: 'A shared table is where real trust is built', character: 'sanji' },
+    ],
+  },
+  {
+    question: 'How do you feel about authority and rules?',
+    options: [
+      { text: 'Rules exist for other people', character: 'luffy' },
+      { text: 'I follow exactly one code: my own', character: 'zoro' },
+      { text: 'Work within the system until it works for you', character: 'nami' },
+      { text: 'Question everything, especially the powerful', character: 'robin' },
+    ],
+  },
+  {
+    question: 'Your dream, in one sentence:',
+    options: [
+      { text: 'Standing at the top of the world, completely free', character: 'luffy' },
+      { text: 'Unbeatable. The single greatest swordsman alive.', character: 'zoro' },
+      { text: 'A complete map of every ocean on earth', character: 'nami' },
+      { text: 'A place where all the world\'s beauty coexists', character: 'sanji' },
+    ],
+  },
+];
+
+const CHARACTER_RESULTS = {
+  luffy: {
+    name: 'Monkey D. Luffy',
+    desc: 'Pure instinct, infinite heart. You do not calculate risk — you create momentum. Your crew would follow you off the edge of the world.',
+    color: '#E50914',
+    tags: ['Free-spirited', 'Fearless', 'Loyal', 'Impulsive', 'Leader'],
+    portrait: 'quiz-luffy.png',
+  },
+  zoro: {
+    name: 'Roronoa Zoro',
+    desc: 'Single-minded, unbreakable, perpetually lost. Your dedication is legendary. Your sense of direction is negotiable.',
+    color: '#2ECC71',
+    tags: ['Disciplined', 'Stoic', 'Relentless', 'Focused', 'Ambitious'],
+    portrait: 'quiz-zoro.png',
+  },
+  nami: {
+    name: 'Nami',
+    desc: 'Three steps ahead of everyone in the room. You understand value, loyalty, and leverage better than anyone. You know exactly what you are worth.',
+    color: '#F39C12',
+    tags: ['Strategic', 'Clever', 'Resourceful', 'Independent', 'Bold'],
+    portrait: 'quiz-nami.png',
+  },
+  usopp: {
+    name: 'Usopp',
+    desc: 'Imagination is your greatest weapon. You tell the story before it happens, then find a way to make it real. Braver than you think.',
+    color: '#E67E22',
+    tags: ['Creative', 'Inventive', 'Brave', 'Imaginative', 'Loyal'],
+    portrait: null,
+  },
+  sanji: {
+    name: 'Vinsmoke Sanji',
+    desc: 'Generous, principled, devastatingly capable. You feed everyone before yourself and ask nothing in return. The crew falls apart without you.',
+    color: '#3498DB',
+    tags: ['Generous', 'Principled', 'Passionate', 'Chivalrous', 'Dedicated'],
+    portrait: 'quiz-sanji.png',
+  },
+  robin: {
+    name: 'Nico Robin',
+    desc: 'Quietly observant, historically minded, lethally underestimated. You survived things that would break most people. That knowledge is your real power.',
+    color: '#9B59B6',
+    tags: ['Perceptive', 'Resilient', 'Mysterious', 'Scholarly', 'Calm'],
+    portrait: 'quiz-robin.png',
+  },
+};
+
+const TRIVIA_QUESTIONS = [
+  {
+    q: "What is the name of Luffy's Devil Fruit?",
+    opts: ['Mera Mera no Mi', 'Gomu Gomu no Mi', 'Gura Gura no Mi', 'Hana Hana no Mi'],
+    answer: 1,
+    fact: "The Gomu Gomu no Mi makes Luffy's body like rubber, granting immunity to blunt force and lightning. It was later revealed to be the Hito Hito no Mi, Model: Nika.",
+  },
+  {
+    q: 'How many swords does Roronoa Zoro fight with simultaneously?',
+    opts: ['One', 'Two', 'Three', 'Four'],
+    answer: 2,
+    fact: "Zoro's Three Sword Style (Santoryu) uses two swords in his hands and one clenched between his teeth.",
+  },
+  {
+    q: 'What is the legendary treasure all pirates seek?',
+    opts: ['The Grand Compass', 'The One Piece', 'The Devil\'s Hoard', 'The Void Century Key'],
+    answer: 1,
+    fact: "Gol D. Roger left the One Piece somewhere in the Grand Line before his public execution, sparking the Great Pirate Era.",
+  },
+  {
+    q: 'Which organization do the Marines serve?',
+    opts: ['The Pirate Alliance', 'The Four Emperors', 'The World Government', 'The Revolutionary Army'],
+    answer: 2,
+    fact: "The Marines are the military arm of the World Government - the same global authority that Monkey D. Dragon's Revolutionary Army actively fights to overthrow.",
+  },
+  {
+    q: "What is Nami's ultimate dream?",
+    opts: ['Become Queen of the Pirates', 'Find the All Blue', 'Draw a complete map of the world', 'Defeat the World Government'],
+    answer: 2,
+    fact: "Nami has dreamed of charting every ocean in the world since childhood, and she joined the Straw Hats because only Luffy could take her there.",
+  },
+  {
+    q: 'In the Netflix live action series, who plays Monkey D. Luffy?',
+    opts: ['Taz Skylar', 'Mackenyu', 'Inaki Godoy', 'Jacob Romero'],
+    answer: 2,
+    fact: 'Mexican actor Inaki Godoy was cast as Luffy after a worldwide search by Netflix, with One Piece creator Eiichiro Oda himself deeply involved in the casting.',
+  },
+];
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+
+function ImgWithFallback({ src, alt, fallbackBg, fallbackIcon, fallbackTitle, style, className }) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed || !src) {
+    return (
+      <div style={{ ...style, background: fallbackBg || '#2D2D2D', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '12px' }} className={className}>
+        {fallbackIcon && <div style={{ fontSize: '32px', marginBottom: '8px' }}>{fallbackIcon}</div>}
+        {fallbackTitle && <div style={{ fontSize: '11px', color: 'white', fontWeight: '600', textAlign: 'center', lineHeight: '1.3' }}>{fallbackTitle}</div>}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src} alt={alt}
+      onError={() => setFailed(true)}
+      style={style} className={className}
+    />
+  );
+}
+
+// ─── NAV ────────────────────────────────────────────────────────────────────
+
+function NetflixNav({ activeSection, onNavClick, profileBadge }) {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const hero = document.getElementById('home');
+    if (!hero) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => setScrolled(!entry.isIntersecting),
+      { threshold: 0.05 }
+    );
+    obs.observe(hero);
+    return () => obs.disconnect();
+  }, []);
+
+  const links = [
+    { id: 'home', label: 'Home' },
+    { id: 'watchlist', label: 'Watchlist' },
+    { id: 'characters', label: 'Meet the Crew' },
+    { id: 'podcast', label: 'Behind the Voyage' },
+    { id: 'games', label: 'Games' },
+  ];
+
+  const scrollTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    onNavClick(id);
+  };
+
+  return (
+    <nav id="nav" className={scrolled ? 'scrolled' : 'at-top'}>
+      <img
+        src="netflix-logo.png"
+        alt="Netflix"
+        onClick={() => scrollTo('home')}
+        style={{ height: '32px', width: 'auto', cursor: 'pointer', flexShrink: 0, display: 'block' }}
+      />
+      <div className="nav-links">
+        {links.map(l => (
+          <a
+            key={l.id}
+            href={`#${l.id}`}
+            className={activeSection === l.id ? 'active' : ''}
+            onClick={(e) => { e.preventDefault(); scrollTo(l.id); }}
+          >
+            {l.label}
+          </a>
+        ))}
+      </div>
+      <div className="nav-right">
+        <svg className="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <div className="nav-avatar" style={{ padding: profileBadge ? 0 : undefined, overflow: profileBadge ? 'hidden' : undefined }}>
+          {profileBadge
+            ? <img src={profileBadge} alt="profile" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}/>
+            : 'G'}
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// ─── HERO ───────────────────────────────────────────────────────────────────
+
+function HeroBillboard() {
+  return (
+    <section id="home">
+      <div className="hero-bg"/>
+      <div className="hero-overlay"/>
+      <div className="hero-floor"/>
+      <div className="hero-content">
+        <img
+          src="title-logo.png"
+          alt="One Piece"
+          style={{ width: '420px', maxWidth: '90vw', marginBottom: '20px', display: 'block' }}
+        />
+        <p className="hero-desc">
+          The Straw Hat Pirates set sail for the Grand Line in search of a legendary treasure. A live action reimagining of Eiichiro Oda's beloved manga, now on Netflix.
+        </p>
+        <div className="hero-ctas">
+          <button className="btn-play">
+            <svg width="14" height="16" viewBox="0 0 21 24" fill="none"><path d="M19.4951 11.5876C20.1603 11.9831 20.1436 12.9519 19.465 13.324L1.48089 23.1878C0.81446 23.5533 6.94647e-07 23.0711 6.71762e-07 22.311L5.29227e-08 1.7577C2.95747e-08 0.982254 0.844358 0.501877 1.51094 0.898088L19.4951 11.5876Z" fill="black"/></svg>
+            Play
+          </button>
+          <button className="btn-info">
+            <svg width="18" height="18" viewBox="0 0 26 26" fill="none"><circle cx="13" cy="13" r="12" stroke="white" strokeWidth="2"/><path d="M13.5019 9.768C13.1659 9.768 12.8619 9.64 12.6219 9.4C12.3659 9.16 12.2379 8.856 12.2379 8.504C12.2379 8.152 12.3659 7.848 12.6219 7.608C12.8619 7.368 13.1659 7.24 13.5019 7.24C13.8379 7.24 14.1419 7.368 14.3979 7.608C14.6379 7.848 14.7659 8.152 14.7659 8.504C14.7659 8.856 14.6379 9.16 14.3979 9.4C14.1419 9.64 13.8379 9.768 13.5019 9.768ZM12.4779 19V10.728H14.5099V19H12.4779Z" fill="white"/></svg>
+            More Info
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── WATCHLIST ──────────────────────────────────────────────────────────────
+
+function WatchCard({ item }) {
+  const [imgOk, setImgOk] = useState(!!item.tmdb);
+
+  return (
+    <div className="content-card">
+      <div className="card-img-wrap">
+        {imgOk && item.tmdb ? (
+          <img
+            src={item.tmdb} alt={item.title}
+            onError={() => setImgOk(false)}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: item.imgPosition || 'center' }}
+          />
+        ) : (
+          <div className="card-placeholder" style={{ background: item.bg }}>
+            <div className="card-placeholder-title">{item.title}</div>
+          </div>
+        )}
+        {/* Status badge bottom-left */}
+        {item.badge && <div className="card-status">{item.badge}</div>}
+      </div>
+    </div>
+  );
+}
+
+function CollectionWatchlist() {
+  const rowRef = useRef(null);
+  const scroll = (dir) => rowRef.current?.scrollBy({ left: dir * 480, behavior: 'smooth' });
+
+  return (
+    <section id="watchlist">
+      <h2 className="section-title">Collection Watchlist</h2>
+      <div className="watchlist-wrap">
+        <button className="arrow-btn arrow-left" onClick={() => scroll(-1)}>&#8249;</button>
+        <div className="watchlist-row no-scroll" ref={rowRef}>
+          {WATCHLIST.map(item => <WatchCard key={item.id} item={item}/>)}
+        </div>
+        <button className="arrow-btn arrow-right" onClick={() => scroll(1)}>&#8250;</button>
+      </div>
+    </section>
+  );
+}
+
+// ─── WANTED POSTER ──────────────────────────────────────────────────────────
+
+function WantedPoster({ character, onClick }) {
+  const [imgOk, setImgOk] = useState(true);
+  return (
+    <div className="crew-item">
+      <div
+        className="wanted-poster"
+        style={{ '--rot': character.rot }}
+        onClick={() => onClick(character)}
+      >
+        {imgOk ? (
+          <img
+            src={character.posterImg}
+            alt={character.name}
+            onError={() => setImgOk(false)}
+          />
+        ) : (
+          <div className="poster-placeholder">☠</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MeetTheCrew({ onCharacterClick }) {
+  return (
+    <section id="characters">
+      <h2 className="section-title">Meet the Crew</h2>
+      <div className="crew-row no-scroll">
+        {CHARACTERS.map(ch => (
+          <WantedPoster key={ch.id} character={ch} onClick={onCharacterClick}/>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── CHARACTER MODAL ────────────────────────────────────────────────────────
+
+function CharacterModal({ character, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [onClose]);
+
+  return (
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="char-modal modal-card" onClick={e => e.stopPropagation()}>
+        <div className="char-modal-hero">
+          <ImgWithFallback
+            src={character.heroImg || character.portrait}
+            alt={character.name}
+            fallbackBg={`linear-gradient(135deg, #1a1a1a, ${character.color}22)`}
+            fallbackIcon="☠"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
+          />
+          <div className="char-modal-hero-overlay"/>
+          <button className="modal-close" onClick={onClose}>&#x2715;</button>
+          <div className="char-name-overlay">
+            <h2>{character.name.toUpperCase()}</h2>
+          </div>
+        </div>
+
+        <div className="char-modal-body">
+          <div className="char-modal-columns">
+            {/* Left column */}
+            <div>
+              <div className="char-meta-row">
+                <span className="char-meta-text">{character.alias}</span>
+                <span className="char-meta-sep">·</span>
+                <span className="char-meta-text">{character.role}</span>
+              </div>
+              <p className="char-desc">{character.description}</p>
+              <blockquote className="intel-quote">{character.verdict}</blockquote>
+            </div>
+
+            {/* Right column */}
+            <div>
+              <div className="char-right-row">
+                <div className="char-right-label">Played by</div>
+                <div className="char-right-value">{character.actor}</div>
+              </div>
+              <div className="char-right-row">
+                <div className="char-right-label">Known As</div>
+                <div className="char-right-value">{character.alias}</div>
+              </div>
+              <div className="char-right-row">
+                <div className="char-right-label">Bounty</div>
+                <div className="char-right-value">&#65509;{character.bounty}</div>
+              </div>
+              {!character.fruit.startsWith('None') && (
+                <div className="char-right-row">
+                  <div className="char-right-label">Devil Fruit</div>
+                  <div className="char-right-value">{character.fruit}</div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="watch-section">
+            <h3>Watch {character.name.split(' ').pop()}</h3>
+            <div className="watch-cards no-scroll">
+              {character.watchCards.map((card, i) => (
+                <div key={i} className="watch-card content-card">
+                  <div className="watch-card-img">
+                    <ImgWithFallback
+                      src={card.img}
+                      alt={card.label}
+                      fallbackBg="#2D2D2D"
+                      fallbackIcon="▶"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  </div>
+                  <div className="watch-card-label">{card.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── PODCAST ────────────────────────────────────────────────────────────────
+
+function BehindTheVoyage() {
+  const [playing, setPlaying] = useState(null);
+
+  return (
+    <section id="podcast" style={{ padding: '40px 0' }}>
+      <div className="podcast-layout">
+
+        <div className="podcast-left">
+          <div className="podcast-img-block">
+            <img src="podcast-hero.jpg" alt="One Piece Official Podcast"/>
+            <div className="podcast-img-gradient"/>
+          </div>
+          <div className="podcast-title-preview">
+            <div className="podcast-logo-group">
+              <img src="title-logo.png" alt="One Piece" className="podcast-logo"/>
+              <p className="podcast-official-text">THE OFFICIAL PODCAST</p>
+            </div>
+            <div className="podcast-btns">
+              <button className="btn-play">
+                <svg width="14" height="16" viewBox="0 0 21 24" fill="none"><path d="M19.4951 11.5876C20.1603 11.9831 20.1436 12.9519 19.465 13.324L1.48089 23.1878C0.81446 23.5533 6.94647e-07 23.0711 6.71762e-07 22.311L5.29227e-08 1.7577C2.95747e-08 0.982254 0.844358 0.501877 1.51094 0.898088L19.4951 11.5876Z" fill="black"/></svg>
+                Play
+              </button>
+              <button className="btn-info">
+                <svg width="18" height="18" viewBox="0 0 26 26" fill="none"><circle cx="13" cy="13" r="12" stroke="white" strokeWidth="2"/><path d="M13.5019 9.768C13.1659 9.768 12.8619 9.64 12.6219 9.4C12.3659 9.16 12.2379 8.856 12.2379 8.504C12.2379 8.152 12.3659 7.848 12.6219 7.608C12.8619 7.368 13.1659 7.24 13.5019 7.24C13.8379 7.24 14.1419 7.368 14.3979 7.608C14.6379 7.848 14.7659 8.152 14.7659 8.504C14.7659 8.856 14.6379 9.16 14.3979 9.4C14.1419 9.64 13.8379 9.768 13.5019 9.768ZM12.4779 19V10.728H14.5099V19H12.4779Z" fill="white"/></svg>
+                More Info
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="episode-list">
+          {PODCAST_EPISODES.map((ep) => (
+            <div
+              key={ep.num}
+              className={`episode-row${playing === ep.num ? ' playing' : ''}`}
+              onClick={() => setPlaying(playing === ep.num ? null : ep.num)}
+            >
+              <div className="episode-num">
+                {playing === ep.num ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#E50914">
+                    <rect x="6" y="4" width="4" height="16"/>
+                    <rect x="14" y="4" width="4" height="16"/>
+                  </svg>
+                ) : ep.num}
+              </div>
+              <div className="episode-info">
+                <div className={`episode-title${playing === ep.num ? ' active' : ''}`}>{ep.title}</div>
+                <div className="episode-dur">{ep.duration}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </section>
+  );
+}
+
+// ─── DEVIL FRUIT GAME COMPONENTS ────────────────────────────────────────────
+
+function CardBack() {
+  return <img src="card-back.png" alt=""/>;
+}
+
+
+const WIN_LETTERS = { 6: 'Y', 7: 'O', 8: 'U', 11: 'W', 12: 'I', 13: 'N' };
+
+function formatTime(s) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return m > 0 ? `${m}m ${sec < 10 ? '0' + sec : sec}s` : `${s}s`;
+}
+
+function DevilFruitGame({ onClose }) {
+  const [cards, setCards] = useState(makeGameCards);
+  const [flippedIds, setFlippedIds] = useState([]);
+  const [matchedPairs, setMatchedPairs] = useState(new Set());
+  const [moves, setMoves] = useState(0);
+  const [isChecking, setIsChecking] = useState(false);
+  const [winPhase, setWinPhase] = useState(null);
+  const [finalTime, setFinalTime] = useState(0);
+  const [finalMoves, setFinalMoves] = useState(0);
+  const [displayTime, setDisplayTime] = useState(0);
+  const [gameChar, setGameChar] = useState(null);
+  const startTimeRef = React.useRef(Date.now());
+
+  useEffect(() => {
+    const fn = (e) => { if (e.key === 'Escape') { if (gameChar) setGameChar(null); else onClose(); } };
+    document.addEventListener('keydown', fn);
+    document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', fn); document.body.style.overflow = ''; };
+  }, [onClose, gameChar]);
+
+  useEffect(() => {
+    if (winPhase !== null) return;
+    const id = setInterval(() => {
+      setDisplayTime(Math.floor((Date.now() - startTimeRef.current) / 1000));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [winPhase]);
+
+  const handleCardClick = (card) => {
+    if (matchedPairs.has(card.pairId) && card.type === 'char') {
+      const ch = CHARACTERS.find(c => c.id === card.fruit.charDataKey) || GAME_CHAR_DATA[card.fruit.charDataKey];
+      if (ch) setGameChar(ch);
+      return;
+    }
+    if (isChecking || matchedPairs.has(card.pairId) || flippedIds.includes(card.id) || flippedIds.length >= 2) return;
+
+    const next = [...flippedIds, card.id];
+    setFlippedIds(next);
+
+    if (next.length === 2) {
+      setMoves(m => m + 1);
+      const c1 = cards.find(c => c.id === next[0]);
+      const c2 = cards.find(c => c.id === next[1]);
+      if (c1.pairId === c2.pairId) {
+        const newMatched = new Set([...matchedPairs, c1.pairId]);
+        setMatchedPairs(newMatched);
+        setFlippedIds([]);
+        if (newMatched.size === DEVIL_FRUITS.length) {
+          const ft = Math.floor((Date.now() - startTimeRef.current) / 1000);
+          setFinalTime(ft);
+          setFinalMoves(moves + 1);
+          setTimeout(() => setWinPhase('show'), 500);
+          setTimeout(() => setWinPhase('flipping'), 620);
+          setTimeout(() => setWinPhase('fade'), 2100);
+          setTimeout(() => setWinPhase('results'), 2680);
+        }
+      } else {
+        setIsChecking(true);
+        setTimeout(() => { setFlippedIds([]); setIsChecking(false); }, 850);
+      }
+    }
+  };
+
+  const reset = () => {
+    setCards(makeGameCards());
+    setFlippedIds([]);
+    setMatchedPairs(new Set());
+    setMoves(0);
+    setIsChecking(false);
+    setWinPhase(null);
+    setFinalTime(0);
+    setFinalMoves(0);
+    setDisplayTime(0);
+    startTimeRef.current = Date.now();
+  };
+
+  return (
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="dfgame-modal modal-card" onClick={e => e.stopPropagation()}>
+        <button className="close-x" onClick={onClose}>&#x2715;</button>
+
+        {winPhase === 'results' ? (
+          <div className="dfgame-results">
+            <div className="dfgame-win-badge">⚓</div>
+            <h2 style={{ fontSize: '28px', fontWeight: 700, color: 'white', margin: 0 }}>Grand Line Achieved!</h2>
+            <div className="dfgame-result-stats">
+              <div className="dfgame-result-stat">
+                <div className="dfgame-result-value">{formatTime(finalTime)}</div>
+                <div className="dfgame-result-label">Time</div>
+              </div>
+              <div className="dfgame-result-stat">
+                <div className="dfgame-result-value">{finalMoves}</div>
+                <div className="dfgame-result-label">Moves</div>
+              </div>
+            </div>
+            <button className="btn-play" onClick={reset}>
+              <svg width="14" height="16" viewBox="0 0 21 24" fill="none"><path d="M19.4951 11.5876C20.1603 11.9831 20.1436 12.9519 19.465 13.324L1.48089 23.1878C0.81446 23.5533 6.94647e-07 23.0711 6.71762e-07 22.311L5.29227e-08 1.7577C2.95747e-08 0.982254 0.844358 0.501877 1.51094 0.898088L19.4951 11.5876Z" fill="black"/></svg>
+              Play Again
+            </button>
+          </div>
+        ) : (winPhase === 'show' || winPhase === 'flipping' || winPhase === 'fade') ? (
+          <div className={`dfgame-grid${winPhase === 'fade' ? ' dfgame-grid-fade' : ''}`}>
+            {Array.from({ length: 20 }, (_, i) => {
+              const letter = WIN_LETTERS[i];
+              const isFlipped = winPhase === 'flipping' || winPhase === 'fade';
+              return (
+                <div key={i} className={`dfgame-card${isFlipped ? ' flipped' : ''}`}>
+                  <div className="dfgame-card-inner" style={{ transitionDelay: isFlipped ? `${i * 38}ms` : '0ms' }}>
+                    <div className="dfgame-card-back"><CardBack/></div>
+                    <div className="dfgame-card-front" style={{ background: '#000', padding: 0 }}>
+                      {letter && <span className="dfgame-win-letter">{letter}</span>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <>
+            <div className="dfgame-header">
+              <div className="dfgame-title">Devil Fruit Matching</div>
+              <div className="dfgame-stats">
+                <span className="dfgame-stat">Matches <strong>{matchedPairs.size}/{DEVIL_FRUITS.length}</strong></span>
+                <span className="dfgame-stat">Moves <strong>{moves}</strong></span>
+                <span className="dfgame-stat">Time <strong>{formatTime(displayTime)}</strong></span>
+              </div>
+            </div>
+            <div className="dfgame-grid">
+              {cards.map(card => {
+                const flipped = flippedIds.includes(card.id) || matchedPairs.has(card.pairId);
+                const matched = matchedPairs.has(card.pairId);
+                return (
+                  <div key={card.id}
+                    className={`dfgame-card${flipped ? ' flipped' : ''}${matched ? ' matched locked' : ''}`}
+                    onClick={() => handleCardClick(card)}>
+                    <div className="dfgame-card-inner">
+                      <div className="dfgame-card-back"><CardBack/></div>
+                      <div className={`dfgame-card-front${card.type === 'char' ? ' dfgame-char-card' : ''}`}
+                           style={card.type === 'fruit' ? { background: '#1A1A1A' } : {}}>
+                        {card.type === 'fruit' ? (
+                          <>
+                            <img src={card.fruit.img} alt={card.fruit.fruitName} className="dfgame-fruit-img"/>
+                            <div className="dfgame-fruit-name">{card.fruit.fruitName}</div>
+                          </>
+                        ) : (
+                          <img src={card.fruit.charImg} alt={card.fruit.charName}/>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+
+      {gameChar && <CharacterModal character={gameChar} onClose={() => setGameChar(null)}/>}
+    </div>
+  );
+}
+
+// ─── GAMES ──────────────────────────────────────────────────────────────────
+
+function NetflixGames({ onQuizOpen, onDevilFruitOpen }) {
+  return (
+    <section id="games">
+      <h2 className="section-title">Games</h2>
+      <div className="games-grid">
+        <div className="game-tile" onClick={onDevilFruitOpen}>
+          <img src="devil-fruit-hero.png" alt="Devil Fruit Matching" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}/>
+        </div>
+        <div className="game-tile" onClick={onQuizOpen}>
+          <ImgWithFallback
+            src="quiz-hero.png"
+            alt="Which Straw Hat Are You?"
+            fallbackBg="linear-gradient(135deg, #0B2240, #1A4A8C)"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── QUIZ MODAL ─────────────────────────────────────────────────────────────
+
+function QuizModal({ onClose, onBadgeAdd }) {
+  const [step, setStep] = useState(0);
+  const [tally, setTally] = useState({});
+  const [chosen, setChosen] = useState(null);
+  const [result, setResult] = useState(null);
+  const [badgeAdded, setBadgeAdded] = useState(false);
+
+  useEffect(() => {
+    const fn = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', fn);
+    document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', fn); document.body.style.overflow = ''; };
+  }, [onClose]);
+
+  const pick = (opt) => {
+    if (chosen) return;
+    setChosen(opt.character);
+    const next = { ...tally, [opt.character]: (tally[opt.character] || 0) + 1 };
+    setTally(next);
+    setTimeout(() => {
+      setChosen(null);
+      if (step < QUIZ_QUESTIONS.length - 1) {
+        setStep(s => s + 1);
+      } else {
+        const winner = Object.entries(next).sort((a, b) => b[1] - a[1])[0][0];
+        setResult(winner);
+      }
+    }, 380);
+  };
+
+  const reset = () => { setStep(0); setTally({}); setChosen(null); setResult(null); setBadgeAdded(false); };
+  const q = QUIZ_QUESTIONS[step];
+  const progress = (step / QUIZ_QUESTIONS.length) * 100;
+  const res = result ? CHARACTER_RESULTS[result] : null;
+  const resChar = result ? CHARACTERS.find(c => c.id === result) : null;
+
+  return (
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="game-modal modal-card" onClick={e => e.stopPropagation()}>
+        <button className="close-x" onClick={onClose}>&#x2715;</button>
+
+        {result ? (
+          <div className="result-screen">
+            <div className="result-portrait" style={{ borderColor: res.color }}>
+              <ImgWithFallback
+                src={res.portrait}
+                alt={res.name}
+                fallbackBg="#2D2D2D"
+                fallbackIcon="☠"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            </div>
+            <h2>{res.name}</h2>
+            <div className="result-tags">
+              {res.tags.map(tag => <span key={tag} className="result-tag">{tag}</span>)}
+            </div>
+            <p className="result-desc">{res.desc}</p>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '4px' }}>
+              <button
+                className={`result-badge-btn${badgeAdded ? ' badge-added' : ''}`}
+                style={{ marginBottom: 0, flex: 1 }}
+                onClick={() => { setBadgeAdded(true); if (res.portrait) onBadgeAdd?.(res.portrait); }}
+                disabled={badgeAdded}
+              >
+                <span className="badge-icon-wrap">
+                  <span className="badge-icon-plus">+</span>
+                  <span className="badge-icon-check">✓</span>
+                </span>
+                {badgeAdded ? 'Badge Added' : 'Add Badge'}
+              </button>
+              <button
+                className="btn-play"
+                onClick={reset}
+                style={{ flex: 1, background: 'transparent', color: 'var(--ink-muted)', border: '1px solid rgba(255,255,255,0.2)', fontSize: '14px', padding: '10px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >Try Again</button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="progress-track" style={{ marginTop: '24px' }}><div className="progress-fill" style={{ width: `${progress}%` }}/></div>
+            <div className="progress-meta">
+              <span>{step + 1} of {QUIZ_QUESTIONS.length}</span>
+            </div>
+            <div className="game-question">{q.question}</div>
+            <div className="options-list">
+              {q.options.map((opt, i) => (
+                <button
+                  key={i}
+                  className={`opt-btn${chosen === opt.character ? ' chosen' : ''}`}
+                  onClick={() => pick(opt)}
+                  disabled={!!chosen}
+                >
+                  {opt.text}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── TRIVIA MODAL ───────────────────────────────────────────────────────────
+
+function TriviaModal({ onClose }) {
+  const [step, setStep] = useState(0);
+  const [chosen, setChosen] = useState(null);
+  const [score, setScore] = useState(0);
+  const [done, setDone] = useState(false);
+
+  useEffect(() => {
+    const fn = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', fn);
+    document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', fn); document.body.style.overflow = ''; };
+  }, [onClose]);
+
+  const pick = (idx) => {
+    if (chosen !== null) return;
+    setChosen(idx);
+    if (idx === TRIVIA_QUESTIONS[step].answer) setScore(s => s + 1);
+    setTimeout(() => {
+      setChosen(null);
+      if (step < TRIVIA_QUESTIONS.length - 1) setStep(s => s + 1);
+      else setDone(true);
+    }, 2200);
+  };
+
+  const reset = () => { setStep(0); setChosen(null); setScore(0); setDone(false); };
+  const q = TRIVIA_QUESTIONS[step];
+  const progress = (step / TRIVIA_QUESTIONS.length) * 100;
+
+  return (
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="game-modal modal-card" onClick={e => e.stopPropagation()}>
+        <button className="close-x" onClick={onClose}>&#x2715;</button>
+
+        {done ? (
+          <div className="result-screen">
+            <div className="result-score">{score} / {TRIVIA_QUESTIONS.length}</div>
+            <p className="result-msg">
+              {score >= 5
+                ? 'You belong on the Grand Line. Gol D. Roger himself would be impressed.'
+                : score >= 3
+                ? 'A solid sailor. Keep reading the Log Poses.'
+                : 'The sea will humble you. Hit the books before your next voyage.'}
+            </p>
+            <div className="btn-center">
+              <button className="btn-play" onClick={reset}>Try Again</button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="progress-track"><div className="progress-fill" style={{ width: `${progress}%` }}/></div>
+            <div className="progress-meta">
+              <span>Question {step + 1} of {TRIVIA_QUESTIONS.length}</span>
+              <span className="score">Score: {score}</span>
+            </div>
+            <div className="game-eyebrow">One Piece Trivia</div>
+            <div className="game-question">{q.q}</div>
+            <div className="options-list">
+              {q.opts.map((opt, i) => {
+                let cls = 'opt-btn';
+                if (chosen !== null) {
+                  cls += ' revealed';
+                  if (i === q.answer) cls += ' correct';
+                  else if (chosen === i) cls += ' wrong';
+                }
+                return (
+                  <button key={i} className={cls} onClick={() => pick(i)} disabled={chosen !== null}>
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+            {chosen !== null && (
+              <div className="fact-box" style={{ borderLeft: `3px solid ${chosen === q.answer ? '#46D369' : '#E50914'}` }}>
+                {q.fact}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── FOOTER ─────────────────────────────────────────────────────────────────
+
+function SiteFooter() {
+  return (
+    <footer className="site-footer">
+      <div className="footer-top">
+        <img src="netflix-logo.png" alt="Netflix" style={{ height: '28px', width: 'auto', display: 'block' }}/>
+        <div className="footer-links">
+          <a href="#">Audio Description</a>
+          <a href="#">Help Center</a>
+          <a href="#">Privacy</a>
+          <a href="#">Terms of Use</a>
+          <a href="#">Cookie Preferences</a>
+        </div>
+      </div>
+      <div className="footer-legal">
+        One Piece and all related characters are property of Eiichiro Oda and Toei Animation.<br/>
+        This is a concept prototype for design purposes only.
+      </div>
+    </footer>
+  );
+}
+
+// ─── APP ────────────────────────────────────────────────────────────────────
+
+function App() {
+  const [activeSection, setActiveSection] = useState('home');
+  const [selectedChar, setSelectedChar] = useState(null);
+  const [activeModal, setActiveModal] = useState(null);
+  const [protoToast, setProtoToast] = useState(false);
+  const [profileBadge, setProfileBadge] = useState(null);
+
+  useEffect(() => {
+    if (!protoToast) return;
+    const id = setTimeout(() => setProtoToast(false), 3000);
+    return () => clearTimeout(id);
+  }, [protoToast]);
+
+  useEffect(() => {
+    const sections = ['home', 'watchlist', 'characters', 'podcast', 'games'];
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) setActiveSection(entry.target.id);
+        });
+      },
+      { threshold: 0.25 }
+    );
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) obs.observe(el);
+    });
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <>
+      <NetflixNav activeSection={activeSection} onNavClick={setActiveSection} profileBadge={profileBadge}/>
+      <main>
+        <HeroBillboard/>
+        <CollectionWatchlist/>
+        <MeetTheCrew onCharacterClick={(char) => {
+          if (char.id === 'luffy') setSelectedChar(char);
+          else setProtoToast(true);
+        }}/>
+        <BehindTheVoyage/>
+        <NetflixGames
+          onQuizOpen={() => setActiveModal('quiz')}
+          onDevilFruitOpen={() => setActiveModal('devilFruit')}
+        />
+      </main>
+      <SiteFooter/>
+
+      {selectedChar && (
+        <CharacterModal character={selectedChar} onClose={() => setSelectedChar(null)}/>
+      )}
+      {protoToast && (
+        <div className="proto-toast">This interaction is not available for this prototype.</div>
+      )}
+      {activeModal === 'quiz' && (
+        <QuizModal onClose={() => setActiveModal(null)} onBadgeAdd={setProfileBadge}/>
+      )}
+      {activeModal === 'devilFruit' && (
+        <DevilFruitGame onClose={() => setActiveModal(null)}/>
+      )}
+    </>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
