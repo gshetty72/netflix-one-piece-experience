@@ -257,6 +257,27 @@
       font-size: 12px; color: var(--ink-muted); margin-top: 3px;
     }
 
+    /* More Like This */
+    .mlt-section { margin-top: 32px; padding-bottom: 8px; }
+    .mlt-title { font-size: 24px; font-weight: 500; color: white; margin-bottom: 22px; }
+    .mlt-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .mlt-card { background: #2f2f2f; border-radius: 4px; overflow: hidden; cursor: pointer; transition: transform 0.22s ease; }
+    .mlt-card:hover { transform: scale(1.02); }
+    .mlt-thumb { position: relative; height: 132px; background: #3a3a3a; overflow: hidden; }
+    .mlt-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .mlt-thumb-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+    .mlt-thumb-title { font-size: 18px; font-weight: 700; color: white; text-align: center; padding: 8px; }
+    .mlt-nlogo { position: absolute; top: 7px; left: 7px; height: 20px; width: auto; display: block; }
+    .mlt-seasons { position: absolute; top: 7px; right: 8px; font-size: 14px; color: white; white-space: nowrap; }
+    .mlt-meta { display: flex; align-items: center; justify-content: space-between; padding: 16px; }
+    .mlt-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .mlt-rating { border: 1px solid #bcbcbc; color: #bcbcbc; font-size: 13px; padding: 2px 6px; }
+    .mlt-hd { border: 1px solid #808080; color: #e5e5e5; font-size: 11px; padding: 2px 5px; border-radius: 3px; }
+    .mlt-year { font-size: 14px; color: #bcbcbc; }
+    .mlt-add-btn { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); background: transparent; color: white; font-size: 22px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: border-color 0.15s; }
+    .mlt-add-btn:hover { border-color: white; }
+    .mlt-desc { padding: 0 14px 16px; font-size: 14px; color: #d2d2d2; line-height: 20px; }
+
     /* Games */
     #games { padding: 40px 0 80px; }
     .games-grid { margin: 0 4%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -314,7 +335,9 @@
       background: #181818; border-radius: 8px;
       max-width: 860px; width: 100%;
       max-height: 90vh; overflow-y: auto;
+      scrollbar-width: none; -ms-overflow-style: none;
     }
+    .char-modal::-webkit-scrollbar { display: none; }
     .char-modal-hero { position: relative; height: 320px; overflow: hidden; border-radius: 8px 8px 0 0; }
     .char-modal-hero img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
     .char-modal-hero-overlay {
@@ -339,10 +362,11 @@
     .char-meta-text { font-size: 13px; color: var(--ink-muted); }
     .char-meta-sep { font-size: 13px; color: #444; }
     .char-meta-pill { border: 1px solid var(--ink-muted); padding: 1px 7px; font-size: 11px; color: var(--ink-muted); border-radius: 3px; letter-spacing: 0.03em; }
-    .char-desc { color: #d3d3d3; font-size: 15px; line-height: 1.7; margin-bottom: 18px; }
-    .char-right-row { margin-bottom: 16px; }
-    .char-right-label { font-size: 13px; color: var(--ink-muted); margin-bottom: 3px; }
-    .char-right-value { font-size: 14px; color: white; font-weight: 500; line-height: 1.4; }
+    .char-desc { color: white; font-size: 15px; line-height: 1.7; margin-bottom: 18px; }
+    .char-body-name { font-size: 22px; font-weight: 700; color: white; margin-bottom: 12px; }
+    .char-info-item { font-size: 14px; line-height: 20px; color: white; margin-bottom: 14px; }
+    .char-info-item:last-child { margin-bottom: 0; }
+    .char-info-label { color: #777; }
     .intel-quote {
       border-left: 2px solid #333; padding-left: 14px;
       color: #a0a0a0; font-size: 14px; line-height: 1.65; font-style: italic; margin: 0;
@@ -358,15 +382,27 @@
       border-left: 2px solid #333; padding-left: 16px;
       color: #d3d3d3; font-size: 14px; line-height: 1.65; font-style: italic;
     }
-    .watch-section h3 { font-size: 16px; font-weight: 600; color: white; margin-bottom: 12px; }
-    .watch-cards { display: flex; gap: 8px; overflow-x: auto; }
-    .watch-card { flex-shrink: 0; cursor: pointer; }
-    .watch-card-img {
-      width: 160px; height: 90px; border-radius: 4px;
-      overflow: hidden; background: var(--surface-2); margin-bottom: 6px;
+    .ep-list { display: flex; flex-direction: column; margin-top: 4px; }
+    .ep-list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .ep-list-title { font-size: 24px; font-weight: 500; color: white; }
+    .ep-list-show { font-size: 18px; color: white; font-weight: 400; }
+    .ep-row {
+      display: flex; align-items: center;
+      padding: 30px 52px 30px 16px;
+      border-bottom: 1px solid #404040;
+      border-radius: 4px; cursor: pointer;
+      transition: background 0.15s;
     }
-    .watch-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .watch-card-label { font-size: 11px; color: #d3d3d3; }
+    .ep-row:hover { background: rgba(255,255,255,0.06); }
+    .ep-num { width: 51px; text-align: center; font-size: 24px; color: #dcdcdc; flex-shrink: 0; line-height: 30px; }
+    .ep-thumb { width: 128px; height: 72px; border-radius: 2px; overflow: hidden; flex-shrink: 0; position: relative; background: #3a3a3a; }
+    .ep-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .ep-thumb-play { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .ep-info { flex: 1; padding-left: 16px; }
+    .ep-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .ep-title { font-size: 16px; color: white; font-weight: 700; }
+    .ep-dur { font-size: 16px; color: white; white-space: nowrap; flex-shrink: 0; }
+    .ep-desc { font-size: 14px; color: #d2d2d2; line-height: 20px; }
 
     /* Quiz / Trivia modals */
     .game-modal {
@@ -567,13 +603,18 @@ const CHARACTERS = [
     verdict: '"His recklessness borders on the miraculous. He does not conquer enemies with strategy. He outlasts them with belief. Approach with extreme caution."',
     verdictLabel: 'Marine Intelligence Dossier',
     watchCards: [
-      { label: 'Ep. 236', img: 'luffy-ep236.png' },
-      { label: 'Ep. 309', img: 'luffy-ep309.png' },
-      { label: 'Ep. 405', img: 'luffy-ep405.png' },
-      { label: 'Ep. 505', img: 'luffy-ep505.png' },
+      { label: 'Ep. 236', title: 'Luffy vs. Usopp! Collision of Two Men\'s Pride!', desc: 'Usopp fights Luffy to decide who keeps the Going Merry, and he fights harder than he ever has before. Luffy endures the punishment and wins, leaving Usopp with the ship.', dur: '24m', img: 'luffy-ep236.png' },
+      { label: 'Ep. 309', title: 'Fists Full of Emotion! Luffy Unleashes Gatling with All His Might!', desc: 'Luffy lies badly beaten, but Usopp\'s desperate pleas inspire him to mount one last furious attack on Rob Lucci.', dur: '24m', img: 'luffy-ep309.png' },
+      { label: 'Ep. 405', title: 'Eliminated Friends – The Final Day of the Straw Hat Crew', desc: 'Bartholomew Kuma\'s paw-print makes the Straw Hats disappear one by one until only Luffy remains. It ends the Sabaody Archipelago arc.', dur: '24m', img: 'luffy-ep405.png' },
+      { label: 'Ep. 505', title: 'I Want to See Them! Luffy\'s Mournful Cry!', desc: 'Luffy is crushed by guilt over his brother\'s death until Jinbe forces him to weigh his grief against the bonds he still has. Meanwhile, Garp and Dadan clash back at Foosha Village. Luffy ends up in tears, admitting he wants to see his crew again.', dur: '24m', img: 'luffy-ep505.png' },
     ],
     color: '#E50914',
     rot: '2deg',
+    suggestions: [
+      { title: 'Naruto', rating: 'TV-PG', year: '2006', seasons: '9 Seasons', desc: 'An outcast boy with a fearsome spirit sealed inside him dreams of becoming his village\'s Hokage, and he trains as a ninja to get there.', img: 'mlt-naruto.png' },
+      { title: 'Black Clover', rating: 'TV-14', year: '2020', seasons: '4 Seasons', desc: 'Two orphans chase the same impossible dream and are locked in a rivalry that pushes them both toward greatness.', img: 'mlt-black-clover.png' },
+      { title: 'Hunter x Hunter', rating: 'TV-14', year: '2016', seasons: '6 Seasons', desc: 'A young boy named Gon dreams of becoming a Hunter like the father who left him when he was little.', img: 'mlt-hxh.png', imgPosition: 'top' },
+    ],
   },
   {
     id: 'zoro',
@@ -1327,66 +1368,98 @@ function CharacterModal({ character, onClose }) {
           />
           <div className="char-modal-hero-overlay"/>
           <button className="modal-close" onClick={onClose}>&#x2715;</button>
-          <div className="char-name-overlay">
-            <h2>{character.name.toUpperCase()}</h2>
-          </div>
         </div>
 
         <div className="char-modal-body">
           <div className="char-modal-columns">
             {/* Left column */}
             <div>
-              <div className="char-meta-row">
-                <span className="char-meta-text">{character.alias}</span>
-                <span className="char-meta-sep">·</span>
-                <span className="char-meta-text">{character.role}</span>
-              </div>
+              <h2 className="char-body-name">{character.name}</h2>
               <p className="char-desc">{character.description}</p>
-              <blockquote className="intel-quote">{character.verdict}</blockquote>
             </div>
 
             {/* Right column */}
             <div>
-              <div className="char-right-row">
-                <div className="char-right-label">Played by</div>
-                <div className="char-right-value">{character.actor}</div>
+              <div className="char-info-item">
+                <span className="char-info-label">Played by: </span>
+                {character.actor}
               </div>
-              <div className="char-right-row">
-                <div className="char-right-label">Known As</div>
-                <div className="char-right-value">{character.alias}</div>
+              <div className="char-info-item">
+                <span className="char-info-label">Known as: </span>
+                {character.alias}
               </div>
-              <div className="char-right-row">
-                <div className="char-right-label">Bounty</div>
-                <div className="char-right-value">&#65509;{character.bounty}</div>
+              <div className="char-info-item">
+                <span className="char-info-label">Bounty: </span>
+                &#65509;{character.bounty}
               </div>
               {!character.fruit.startsWith('None') && (
-                <div className="char-right-row">
-                  <div className="char-right-label">Devil Fruit</div>
-                  <div className="char-right-value">{character.fruit}</div>
+                <div className="char-info-item">
+                  <span className="char-info-label">Devil Fruit: </span>
+                  {character.fruit}
                 </div>
               )}
+              <div className="char-info-item">
+                <span className="char-info-label">Role: </span>
+                {character.role}
+              </div>
             </div>
           </div>
 
-          <div className="watch-section">
-            <h3>Watch {character.name.split(' ').pop()}</h3>
-            <div className="watch-cards no-scroll">
-              {character.watchCards.map((card, i) => (
-                <div key={i} className="watch-card content-card">
-                  <div className="watch-card-img">
-                    <ImgWithFallback
-                      src={card.img}
-                      alt={card.label}
-                      fallbackBg="#2D2D2D"
-                      fallbackIcon="▶"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    />
-                  </div>
-                  <div className="watch-card-label">{card.label}</div>
-                </div>
-              ))}
+          <div className="ep-list">
+            <div className="ep-list-header">
+              <span className="ep-list-title">Key Episodes</span>
+              <span className="ep-list-show">{character.name}</span>
             </div>
+            {character.watchCards.map((card, i) => (
+              <div key={i} className="ep-row">
+                <div className="ep-num">{i + 1}</div>
+                <div className="ep-thumb">
+                  <ImgWithFallback
+                    src={card.img}
+                    alt={card.label}
+                    fallbackBg="#2D2D2D"
+                    fallbackIcon="▶"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                </div>
+                <div className="ep-info">
+                  <div className="ep-top-row">
+                    <span className="ep-title">{card.title || card.label}</span>
+                    {card.dur && <span className="ep-dur">{card.dur}</span>}
+                  </div>
+                  {card.desc && <p className="ep-desc">{card.desc}</p>}
+                </div>
+              </div>
+            ))}
           </div>
+
+          {character.suggestions && character.suggestions.length > 0 && (
+            <div className="mlt-section">
+              <h3 className="mlt-title">More Like This</h3>
+              <div className="mlt-grid">
+                {character.suggestions.map((s, i) => (
+                  <div key={i} className="mlt-card">
+                    <div className="mlt-thumb">
+                      {s.img
+                        ? <img src={s.img} alt={s.title} style={{ objectPosition: s.imgPosition || 'center' }}/>
+                        : <div className="mlt-thumb-placeholder"><span className="mlt-thumb-title">{s.title}</span></div>
+                      }
+                      <span className="mlt-seasons">{s.seasons}</span>
+                    </div>
+                    <div className="mlt-meta">
+                      <div className="mlt-badges">
+                        <span className="mlt-rating">{s.rating}</span>
+                        <span className="mlt-hd">HD</span>
+                        <span className="mlt-year">{s.year}</span>
+                      </div>
+                      <button className="mlt-add-btn">+</button>
+                    </div>
+                    <p className="mlt-desc">{s.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
